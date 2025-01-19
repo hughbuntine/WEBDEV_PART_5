@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import Blog from './components/Blog'
+import NewBlogForm from './components/NewBlogForm'
 import blogService from './services/blogs'
 import loginService from './services/login'
 
@@ -9,11 +10,9 @@ const App = () => {
   const [password, setPassword] = useState('') 
   const [user, setUser] = useState(null)
 
-  const [title, setTitle] = useState('')
-  const [author, setAuthor] = useState('')
-  const [url, setUrl] = useState('')
-
   const [message, setMessage] = useState(null)
+
+  const [newBlog, setNewBlog] = useState(false)
 
   
   const handleLogin = async (event) => {
@@ -41,26 +40,6 @@ const App = () => {
     setUser(null)
     blogService.setToken(null)
     setNewMessage('logged out')
-  }
-
-  const addBlog = (event) => {
-    event.preventDefault()
-    const blogObject = {
-      title: title,
-      author: author,
-      url: url
-    }
-
-    blogService
-      .create(blogObject)
-      .then(returnedBlog => {
-        setBlogs(blogs.concat(returnedBlog))
-        setTitle('')
-        setAuthor('')
-        setUrl('')
-      })
-
-      setNewMessage(`a new blog ${title} by ${author} added`)
   }
 
   const setNewMessage = (message) => {
@@ -94,38 +73,6 @@ const App = () => {
     </form>      
   )
 
-  const newBlogForm = () => (
-    <form onSubmit={addBlog}>
-      <div>
-        title:
-          <input
-          type="text"
-          value={title}
-          name="Title"
-          onChange={({ target }) => setTitle(target.value)}
-        />
-      </div>
-      <div>
-        author:
-          <input
-          type="text"
-          value={author}
-          name="Author"
-          onChange={({ target }) => setAuthor(target.value)}
-        />
-      </div>
-      <div>
-        url:
-          <input
-          type="text"
-          value={url}
-          name="Url"
-          onChange={({ target }) => setUrl(target.value)}
-        />
-      </div>
-      <button type="submit">create</button>
-      </form>
-  )
 
   useEffect(() => {
     const loggedUserJSON = window.localStorage.getItem('loggedBlogAppUser')
@@ -154,15 +101,24 @@ const App = () => {
         <div>
           <p>Welcome, {user.username}!<button onClick={handleLogout}>logout</button></p>
           <h2>create new</h2>
-          {newBlogForm()}
-          <p></p>
-          {blogs.map(blog =>
-            <Blog key={blog.id} blog={blog} />
-          )}
-        </div>
-      }
-    </div>
-  )
-}
+          <button onClick={() => setNewBlog(!newBlog)}>
+            {newBlog ? 'cancel' : 'create new blog'}
+          </button>
+                    {newBlog ? 
+                    <NewBlogForm 
+                    setBlogs={setBlogs} 
+                    blogs={blogs}
+                    setNewMessage={setNewMessage}
+                    setNewBlog={setNewBlog}/> 
+                    : null}
+                    <p></p>
+                    {blogs.sort((a, b) => b.likes - a.likes).map(blog =>
+                      <Blog key={blog.id} blog={blog} blogsArray={blogs} setBlogs={setBlogs}/>
+                    )}
+                  </div>
+                }
+              </div>
+            )
+          }
 
-export default App
+          export default App
